@@ -15,11 +15,29 @@ namespace MemDub
 
         private List<GridTile> spawnedTiles;
 
+        private readonly System.Random listRnd = new();
+
+        private int currentActiveTiles = 0;
+
         #region Unity Functions
-        protected void Start()
+        protected void Awake()
         {
             spawnedTiles = new();
             MasterEventBus.GetMasterEventBus.StartGameWithConfiguration += StartGameWithConfiguration;
+
+            MasterEventBus.GetMasterEventBus.OnPlayerActionDone += OnPlayerActionDone;
+        }
+
+        private void OnPlayerActionDone(bool isSuccess, int _)
+        {
+            if (isSuccess)
+            {
+                currentActiveTiles -= 2;
+                if (currentActiveTiles <= 0)
+                {
+                    MasterEventBus.GetMasterEventBus.OnGameStateChanged?.Invoke(EGameState.EGameOver);
+                }
+            }
         }
 
         private void StartGameWithConfiguration(GameConfiguration configuration, int selectedDifficulty)
@@ -30,28 +48,49 @@ namespace MemDub
             }
             spawnedTiles.Clear();
 
-            int newCount;
             switch (selectedDifficulty)
             {
                 case 0:
-                    newCount = configuration.EasyTileCount;
+                    currentActiveTiles = configuration.EasyTileCount;
                     break;
                 case 1:
-                    newCount = configuration.MediumTileCount;
+                    currentActiveTiles = configuration.MediumTileCount;
                     break;
                 case 2:
-                    newCount = configuration.HardTileCount;
+                    currentActiveTiles = configuration.HardTileCount;
                     break;
                 default:
-                    newCount = configuration.EasyTileCount;
+                    currentActiveTiles = configuration.EasyTileCount;
                     break;
             }
-            
+
+
             List<GridTile> tempHolder = new();
-            
-            for (int i = 0; i < newCount; i++)
+
+            for (int i = 0; i < currentActiveTiles; i++)
             {
                 tempHolder.Add(Instantiate(gridPrefab, gridBoard));
+            }
+
+            while (tempHolder.Count > 0)
+            {
+                //Choose a random shape color combination
+                var clr = configuration.GameTileColors[listRnd.Next(configuration.GameTileColors.Length)];
+                var spr = configuration.Shapes[listRnd.Next(configuration.Shapes.Length)];
+
+                //Choose two random tiles from the list
+                int rndIndex = listRnd.Next(tempHolder.Count);
+                var rndTile = tempHolder[rndIndex];
+                rndTile.SetTileData(spr, clr);
+                tempHolder.Remove(rndTile);
+                spawnedTiles.Add(rndTile);
+
+                //TODO Make this a function.
+                rndIndex = listRnd.Next(tempHolder.Count);
+                rndTile = tempHolder[rndIndex];
+                rndTile.SetTileData(spr, clr);
+                tempHolder.Remove(rndTile);
+                spawnedTiles.Add(rndTile);
             }
         }
         #endregion

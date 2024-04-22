@@ -26,3 +26,4 @@ MonoBehaviour:
   - {fileID: 3625043607559282579, guid: 3dddbc39b10109e468087a891d51d3e7, type: 3}
   - {fileID: 7482667652216324306, guid: 5d5e60653e36d2f47a0924d277b6ec63, type: 3}
   - {fileID: 7482667652216324306, guid: 2eabe9bf8875f894594d9d410ab18b52, type: 3}
+  ScorePerMatch: 20

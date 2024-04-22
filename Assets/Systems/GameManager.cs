@@ -14,7 +14,9 @@ namespace MemDub
 
         private int _currentScore;
 
-        protected void Start()
+        private int _difficultyValue = 0;
+
+        protected void Awake()
         {
             MasterEventBus.GetMasterEventBus.OnGameStateChanged += OnGameStateChanged;
             MasterEventBus.GetMasterEventBus.OnTileSelected += OnTileSelected;
@@ -27,7 +29,7 @@ namespace MemDub
             {
                 case EGameState.EInGame:
                     //TODO Difficulty menu?
-                    MasterEventBus.GetMasterEventBus.StartGameWithConfiguration?.Invoke(gameConfiguration, 0);
+                    MasterEventBus.GetMasterEventBus.StartGameWithConfiguration?.Invoke(gameConfiguration, _difficultyValue);
                     break;
             }
         }
@@ -36,22 +38,40 @@ namespace MemDub
         {
             if (lastSelectedTile != null)
             {
-                if (lastSelectedTile.TileMatches(selectedTile))
+                var isSuccess = lastSelectedTile.TileMatches(selectedTile);
+                
+                if (isSuccess)
                 {
                     _currentScore += gameConfiguration.ScorePerMatch;
-                    MasterEventBus.GetMasterEventBus.OnPlayerActionDone?.Invoke(true, _currentScore);
-                    lastSelectedTile.TileConsumed();
-                    selectedTile.TileConsumed();
                 }
-                else
-                {
-                    lastSelectedTile = null;
-                }
+                StartCoroutine(DelayedTileHide(selectedTile, isSuccess));
             }
             else
             {
                 lastSelectedTile = selectedTile;
             }
+        }
+
+        private IEnumerator DelayedTileHide(GridTile brokenPartner, bool isConsume)
+        {
+            yield return new WaitForSeconds(0.75f);
+            if (isConsume)
+            {
+                MasterEventBus.GetMasterEventBus.OnPlayerActionDone?.Invoke(true, _currentScore);
+                lastSelectedTile.TileConsumed();
+                brokenPartner.TileConsumed();
+            }
+            else
+            {
+                lastSelectedTile.HideTile();
+                brokenPartner.HideTile();
+            }
+            lastSelectedTile = null;
+        }
+
+        internal void SetDifficulty(int val)
+        {
+            _difficultyValue = val;
         }
     }
 }
