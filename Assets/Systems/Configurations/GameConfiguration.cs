@@ -6,14 +6,16 @@ namespace MemDub
     public class GameConfiguration : ScriptableObject
     {
         [Header("Gameplay configuration")]
-        public int EasyTileCount;
-        public int MediumTileCount;
-        public int HardTileCount;
+        [Tooltip("The multiple of Row and Column count should be an even number or game will not start")]
+        public int RowCount;
+        [Tooltip("The multiple of Row and Column count should be an even number or game will not start")]
+        public int ColCount;
+
+        [Space(5)]
 
         [Header("Tile configuration")]
         public Color[] GameTileColors;
         public Sprite[] Shapes;
-
         public int ScorePerMatch;
     }
 }

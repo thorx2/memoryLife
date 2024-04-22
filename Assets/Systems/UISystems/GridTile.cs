@@ -16,6 +16,10 @@ namespace MemDub
 
         private bool consumed;
 
+        private (int, int) TileIndexPos;
+
+        private Button _parentButton;
+
         public (Sprite, Color) GetTileMetadata
         {
             get => (displayImage.sprite, displayImage.color);
@@ -32,8 +36,28 @@ namespace MemDub
             containerGroup.alpha = 1f;
             displayImage.sprite = visual;
             displayImage.color = color;
-            displayImage.gameObject.SetActive(false);
+            displayImage.gameObject.SetActive(true);
+            displayImage.preserveAspect = true;
             consumed = false;
+            StartCoroutine(DelayedScaleSet());
+            if (TryGetComponent(out _parentButton))
+            {
+                _parentButton.interactable = false;
+            }
+        }
+
+        private IEnumerator DelayedScaleSet()
+        {
+            yield return new WaitForEndOfFrame();
+            transform.localScale = Vector3.one;
+        }
+
+        public void TileTouchable(bool toggle)
+        {
+            if (_parentButton)
+            {
+                _parentButton.interactable = toggle;
+            }
         }
 
         public void HideTile()
@@ -58,6 +82,12 @@ namespace MemDub
                 return true;
             }
             return false;
+        }
+
+        internal void SetIndexData(int i, int j)
+        {
+            TileIndexPos.Item1 = i;
+            TileIndexPos.Item2 = j;
         }
     }
 }

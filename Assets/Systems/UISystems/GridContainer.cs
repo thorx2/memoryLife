@@ -13,6 +13,10 @@ namespace MemDub
         [SerializeField]
         private GridTile gridPrefab;
 
+        [SerializeField]
+        private Transform horizontalContainer;
+
+
         private List<GridTile> spawnedTiles;
 
         private readonly System.Random listRnd = new();
@@ -40,36 +44,37 @@ namespace MemDub
             }
         }
 
+        public void RecreateBoardData(string dataJson)
+        {
+
+        }
+
         private void StartGameWithConfiguration(GameConfiguration configuration, int selectedDifficulty)
         {
+            for (int i = gridBoard.transform.childCount - 1; i >= 0; i--)
+            {
+                Destroy(gridBoard.transform.GetChild(i).gameObject);
+            }
+
             for (int i = 0; i < spawnedTiles.Count; i++)
             {
                 Destroy(spawnedTiles[i]);
             }
             spawnedTiles.Clear();
 
-            switch (selectedDifficulty)
+            currentActiveTiles = configuration.RowCount * configuration.ColCount;
+            if (currentActiveTiles % 2 != 0)
             {
-                case 0:
-                    currentActiveTiles = configuration.EasyTileCount;
-                    break;
-                case 1:
-                    currentActiveTiles = configuration.MediumTileCount;
-                    break;
-                case 2:
-                    currentActiveTiles = configuration.HardTileCount;
-                    break;
-                default:
-                    currentActiveTiles = configuration.EasyTileCount;
-                    break;
+                Debug.LogError("Cannot clear board as tiles will not have any pairs!!!");
+                MasterEventBus.GetMasterEventBus.OnGameStateChanged?.Invoke(EGameState.EInMenu);
+                return;
             }
-
 
             List<GridTile> tempHolder = new();
 
             for (int i = 0; i < currentActiveTiles; i++)
             {
-                tempHolder.Add(Instantiate(gridPrefab, gridBoard));
+                tempHolder.Add(Instantiate(gridPrefab));
             }
 
             while (tempHolder.Count > 0)
@@ -92,10 +97,34 @@ namespace MemDub
                 tempHolder.Remove(rndTile);
                 spawnedTiles.Add(rndTile);
             }
+            tempHolder.AddRange(spawnedTiles);
+            for (int i = 0; i < configuration.RowCount; i++)
+            {
+                var tempHor = Instantiate(horizontalContainer, gridBoard);
+                for (int j = 0; j < configuration.ColCount; j++)
+                {
+                    var x = tempHolder[listRnd.Next(tempHolder.Count)];
+                    x.transform.SetParent(tempHor.transform);
+                    x.SetIndexData(i,j);
+                    tempHolder.Remove(x);
+                }
+            }
+
+            StartCoroutine(HideTilesPostShowForGame());
         }
         #endregion
 
         #region Functionality
+
+        private IEnumerator HideTilesPostShowForGame()
+        {
+            yield return new WaitForSeconds(1f);
+            foreach (var item in spawnedTiles)
+            {
+                item.HideTile();
+                item.TileTouchable(true);
+            }
+        }
 
         public void ShowAllTiles()
         {
