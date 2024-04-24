@@ -7,8 +7,8 @@ namespace MemDub
     {
         public int X;
         public int Y;
-        public EShapeColor Color;
-        public EShapeType Type;
+        public int Color;
+        public int Type;
         public bool IsConsumed;
     }
 }

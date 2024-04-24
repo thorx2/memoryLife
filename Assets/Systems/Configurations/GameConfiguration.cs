@@ -13,8 +13,16 @@ namespace MemDub
 
         [Space(5)]
 
+        //Could have used any third party dictionary to value mapping script, skipping for
+        //a more linear built in solutions.
+        //Index of enum corresponds to index of color.
+
         [Header("Tile configuration")]
+        public EShapeColor[] ColorMappingEnum;
         public Color[] GameTileColors;
+
+        //Same treatment for shape
+        public EShapeType[] ShapeMappingEnum;
         public Sprite[] Shapes;
         public int ScorePerMatch;
     }

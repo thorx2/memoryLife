@@ -1,7 +1,4 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using Codice.Client.BaseCommands.Differences;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,12 +12,20 @@ namespace MemDub
         [SerializeField]
         private CanvasGroup containerGroup;
 
-        private bool consumed;
+        private bool consumed = false;
 
         private (int, int) TileIndexPos;
 
         private bool _animationRunning = false;
         private Button _parentButton;
+
+        private int _shapeColor;
+        private int _shapeType;
+
+        public (int, int) GetTileIndexPos
+        {
+            get => TileIndexPos;
+        }
 
         public (Sprite, Color) GetTileMetadata
         {
@@ -33,17 +38,35 @@ namespace MemDub
             containerGroup.alpha = 0f;
         }
 
-        public void SetTileData(int x, int y, EShapeColor clr, EShapeType type, bool hasBeenConsumed)
+        public void SetTileData(int x, int y, Color clr, Sprite type, bool hasBeenConsumed, int shapeIndex, int colorIndex)
         {
             SetIndexData(x, y);
+            SetTileData(type, clr, shapeIndex, colorIndex);
             if (hasBeenConsumed)
             {
                 TileConsumed();
             }
+            else
+            {
+                consumed = false;
+            }
         }
 
-        public void SetTileData(Sprite visual, Color color)
+        public TileData CreateTileData()
         {
+            TileData td = new();
+            td.X = TileIndexPos.Item1;
+            td.Y = TileIndexPos.Item2;
+            td.Color = _shapeColor;
+            td.Type = _shapeType;
+            td.IsConsumed = consumed;
+            return td;
+        }
+
+        public void SetTileData(Sprite visual, Color color, int shapeIndex, int colorIndex)
+        {
+            _shapeType = shapeIndex;
+            _shapeColor = colorIndex;
             containerGroup.alpha = 1f;
             displayImage.sprite = visual;
             displayImage.color = color;
@@ -100,7 +123,7 @@ namespace MemDub
 
         public void ShowTile()
         {
-            if (!consumed && !_animationRunning)
+            if (!consumed && !_animationRunning && !displayImage.gameObject.activeInHierarchy)
             {
                 _animationRunning = true;
                 StartCoroutine(FlipCard(true));

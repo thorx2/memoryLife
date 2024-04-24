@@ -17,6 +17,7 @@ namespace MemDub
         public GameRoundData GetGameRoundData
         {
             get => _gameRoundData;
+            set => _gameRoundData = value;
         }
 
         protected void Awake()
@@ -60,9 +61,9 @@ namespace MemDub
             yield return new WaitForSeconds(0.75f);
             if (isConsume)
             {
-                MasterEventBus.GetMasterEventBus.OnPlayerActionDone?.Invoke(true, _gameRoundData.Score);
                 lastSelectedTile.TileConsumed();
                 brokenPartner.TileConsumed();
+                MasterEventBus.GetMasterEventBus.OnPlayerActionDone?.Invoke(true, _gameRoundData.Score);
             }
             else
             {

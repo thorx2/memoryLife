@@ -22,16 +22,16 @@ namespace MemDub
         private GameManager gameManager;
 
 
-        private List<GridTile> spawnedTiles;
+        private List<GridTile> _spawnedTiles;
 
-        private readonly System.Random listRnd = new();
+        private readonly System.Random _listRnd = new();
 
-        private int currentActiveTiles = 0;
+        private int _currentActiveTiles = 0;
 
         #region Unity Functions
         protected void Awake()
         {
-            spawnedTiles = new();
+            _spawnedTiles = new();
             MasterEventBus.GetMasterEventBus.StartGameWithConfiguration += StartGameWithConfiguration;
 
             MasterEventBus.GetMasterEventBus.OnPlayerActionDone += OnPlayerActionDone;
@@ -43,32 +43,48 @@ namespace MemDub
             {
                 //Susceptible to bugs and count issues.
                 //TODO need to change to something more solid.
-                currentActiveTiles -= 2;
-                if (currentActiveTiles <= 0)
+                _currentActiveTiles -= 2;
+                if (_currentActiveTiles <= 0)
                 {
                     SaveManager.GetInstance.UpdateInGameState(false);
                     MasterEventBus.GetMasterEventBus.OnGameStateChanged?.Invoke(EGameState.EGameOver);
                 }
                 //Save board state again here
+                //Inefficient for memory, but can be ignore for casual games?
                 var x = gameManager.GetGameRoundData;
+                var td = new List<TileData>();
+                foreach (var item in _spawnedTiles)
+                {
+                    td.Add(item.CreateTileData());
+                }
+                x.TileInformation = td;
+                gameManager.GetGameRoundData = x;
             }
         }
 
         private void StartGameWithConfiguration(GameConfiguration configuration, bool isReplay)
         {
             List<TileData> data = null;
+            int roundRowCount = configuration.RowCount;
+            int roundColCount = configuration.ColCount;
             if (isReplay)
             {
                 if (SaveManager.GetInstance.GetBoardState().Length > 0)
                 {
                     var d = JsonUtility.FromJson<GameRoundData>(SaveManager.GetInstance.GetBoardState());
-                    configuration.RowCount = d.BoardSizeX;
-                    configuration.ColCount = d.BoardSizeY;
+                    roundRowCount = d.BoardSizeX;
+                    roundColCount = d.BoardSizeY;
                     data = d.TileInformation;
+                    if (data == null || data.Count == 0)
+                    {
+                        roundRowCount = configuration.RowCount;
+                        roundColCount = configuration.ColCount;
+                        Debug.LogError($"Requested game continue, missing save state, reverting to default game");
+                    }
                 }
                 else
                 {
-
+                    Debug.LogError($"Requested game continue, missing save state, reverting to default game");
                 }
             }
             for (int i = gridBoard.transform.childCount - 1; i >= 0; i--)
@@ -76,14 +92,14 @@ namespace MemDub
                 Destroy(gridBoard.transform.GetChild(i).gameObject);
             }
 
-            for (int i = 0; i < spawnedTiles.Count; i++)
+            for (int i = 0; i < _spawnedTiles.Count; i++)
             {
-                Destroy(spawnedTiles[i]);
+                Destroy(_spawnedTiles[i]);
             }
-            spawnedTiles.Clear();
+            _spawnedTiles.Clear();
 
-            currentActiveTiles = configuration.RowCount * configuration.ColCount;
-            if (currentActiveTiles % 2 != 0)
+            _currentActiveTiles = roundRowCount * roundColCount;
+            if (_currentActiveTiles % 2 != 0)
             {
                 Debug.LogError("Cannot clear board as tiles will not have any pairs!!!");
                 MasterEventBus.GetMasterEventBus.OnGameStateChanged?.Invoke(EGameState.EInMenu);
@@ -92,7 +108,7 @@ namespace MemDub
 
             List<GridTile> tempHolder = new();
 
-            for (int i = 0; i < currentActiveTiles; i++)
+            for (int i = 0; i < _currentActiveTiles; i++)
             {
                 tempHolder.Add(Instantiate(gridPrefab));
             }
@@ -100,31 +116,33 @@ namespace MemDub
             while (tempHolder.Count > 0)
             {
                 //Choose a random shape color combination
-                var clr = configuration.GameTileColors[listRnd.Next(configuration.GameTileColors.Length)];
-                var spr = configuration.Shapes[listRnd.Next(configuration.Shapes.Length)];
+                int colorIndex = _listRnd.Next(configuration.GameTileColors.Length);
+                var clr = configuration.GameTileColors[colorIndex];
+                int shapeIndex = _listRnd.Next(configuration.Shapes.Length);
+                var spr = configuration.Shapes[shapeIndex];
 
                 //Choose two random tiles from the list
-                int rndIndex = listRnd.Next(tempHolder.Count);
+                int rndIndex = _listRnd.Next(tempHolder.Count);
                 var rndTile = tempHolder[rndIndex];
-                rndTile.SetTileData(spr, clr);
+                rndTile.SetTileData(spr, clr, shapeIndex, colorIndex);
                 tempHolder.Remove(rndTile);
-                spawnedTiles.Add(rndTile);
+                _spawnedTiles.Add(rndTile);
 
                 //TODO Make this a function.
-                rndIndex = listRnd.Next(tempHolder.Count);
+                rndIndex = _listRnd.Next(tempHolder.Count);
                 rndTile = tempHolder[rndIndex];
-                rndTile.SetTileData(spr, clr);
+                rndTile.SetTileData(spr, clr, shapeIndex, colorIndex);
                 tempHolder.Remove(rndTile);
-                spawnedTiles.Add(rndTile);
+                _spawnedTiles.Add(rndTile);
             }
-            tempHolder.AddRange(spawnedTiles);
+            tempHolder.AddRange(_spawnedTiles);
             List<Transform> rowContainer = new();
-            for (int i = 0; i < configuration.RowCount; i++)
+            for (int i = 0; i < roundRowCount; i++)
             {
                 rowContainer.Add(Instantiate(horizontalContainer, gridBoard));
-                for (int j = 0; j < configuration.ColCount; j++)
+                for (int j = 0; j < roundColCount; j++)
                 {
-                    var x = tempHolder[listRnd.Next(tempHolder.Count)];
+                    var x = tempHolder[_listRnd.Next(tempHolder.Count)];
                     x.transform.SetParent(rowContainer.Last().transform);
                     x.SetIndexData(i, j);
                     tempHolder.Remove(x);
@@ -137,11 +155,24 @@ namespace MemDub
                 {
                     if (rowContainer[item.X].GetChild(item.Y).TryGetComponent<GridTile>(out var tile))
                     {
-                        tile.SetTileData(item.X, item.Y, item.Color, item.Type, item.IsConsumed);
+                        tile.SetTileData(tile.GetTileIndexPos.Item1, tile.GetTileIndexPos.Item2,
+                                            configuration.GameTileColors[item.Color],
+                                            configuration.Shapes[item.Type], item.IsConsumed,
+                                            item.Type, item.Color);
                     }
                 }
             }
             StartCoroutine(HideTilesPostShowForGame());
+            var rd = gameManager.GetGameRoundData;
+            rd.BoardSizeX = roundRowCount;
+            rd.BoardSizeY = roundColCount;
+            var td = new List<TileData>();
+            foreach (var item in _spawnedTiles)
+            {
+                td.Add(item.CreateTileData());
+            }
+            rd.TileInformation = td;
+            gameManager.GetGameRoundData = rd;
             SaveManager.GetInstance.UpdateInGameState(true);
         }
         #endregion
@@ -151,7 +182,7 @@ namespace MemDub
         private IEnumerator HideTilesPostShowForGame()
         {
             yield return new WaitForSeconds(1f);
-            foreach (var item in spawnedTiles)
+            foreach (var item in _spawnedTiles)
             {
                 item.HideTile();
                 item.TileTouchable(true);
@@ -160,7 +191,7 @@ namespace MemDub
 
         public void ShowAllTiles()
         {
-            foreach (GridTile tile in spawnedTiles)
+            foreach (GridTile tile in _spawnedTiles)
             {
                 tile.ShowTile();
             }
@@ -168,7 +199,7 @@ namespace MemDub
 
         public void HideAllTiles()
         {
-            foreach (GridTile tile in spawnedTiles)
+            foreach (GridTile tile in _spawnedTiles)
             {
                 tile.HideTile();
             }

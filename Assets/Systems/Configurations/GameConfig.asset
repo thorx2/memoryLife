@@ -14,15 +14,17 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   RowCount: 3
   ColCount: 4
+  ColorMappingEnum: 000000000100000002000000
   GameTileColors:
   - {r: 0.8301887, g: 0.27020293, b: 0.27020293, a: 1}
   - {r: 0.31331587, g: 0.8018868, b: 0.21560162, a: 1}
   - {r: 0.19450872, g: 0.4684202, b: 0.8773585, a: 1}
+  ShapeMappingEnum: 000000000100000002000000030000000400000005000000
   Shapes:
+  - {fileID: 7482667652216324306, guid: 2eabe9bf8875f894594d9d410ab18b52, type: 3}
+  - {fileID: 7482667652216324306, guid: 5d5e60653e36d2f47a0924d277b6ec63, type: 3}
+  - {fileID: 3625043607559282579, guid: 3dddbc39b10109e468087a891d51d3e7, type: 3}
   - {fileID: -2413806693520163455, guid: ce6493454f27fa24fb0f807cbcb6dbae, type: 3}
   - {fileID: 2747690628134850419, guid: eeb70d824b3d5624ba6cf60c3d00c63b, type: 3}
   - {fileID: -2135585597343286014, guid: e8f65f3d434805c47af8cf37f654d6fd, type: 3}
-  - {fileID: 3625043607559282579, guid: 3dddbc39b10109e468087a891d51d3e7, type: 3}
-  - {fileID: 7482667652216324306, guid: 5d5e60653e36d2f47a0924d277b6ec63, type: 3}
-  - {fileID: 7482667652216324306, guid: 2eabe9bf8875f894594d9d410ab18b52, type: 3}
   ScorePerMatch: 20
