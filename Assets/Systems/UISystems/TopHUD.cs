@@ -8,15 +8,23 @@ namespace MemDub
         [SerializeField]
         private TMP_Text scoreField;
 
-        protected void Start()
+        private string displayText;
+
+        protected void Awake()
         {
             MasterEventBus.GetMasterEventBus.OnPlayerActionDone += OnPlayerActionDone;
-            scoreField.text = "Score:0";
+            displayText = "Score:0";
+        }
+
+        protected void OnEnable()
+        {
+            scoreField.text = displayText;
         }
 
         private void OnPlayerActionDone(bool isCorrectAnswer, int finalScore)
         {
-            scoreField.text = $"Score:{finalScore}";
+            displayText = $"Score:{finalScore}";
+            scoreField.text = displayText;
         }
     }
 }

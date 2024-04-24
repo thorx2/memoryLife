@@ -31,9 +31,22 @@ namespace MemDub
             switch (state)
             {
                 case EGameState.EInGame:
-                    _gameRoundData = new();
-                    _gameRoundData.Score = 0;
-                    MasterEventBus.GetMasterEventBus.StartGameWithConfiguration?.Invoke(gameConfiguration, SaveManager.GetInstance.GetInGameState());
+                    bool isReload = false;
+                    if (SaveManager.GetInstance.GetInGameState())
+                    {
+                        _gameRoundData = JsonUtility.FromJson<GameRoundData>(SaveManager.GetInstance.GetBoardState());
+                        //HAX setting score on HUD for continue game
+                        MasterEventBus.GetMasterEventBus.OnPlayerActionDone?.Invoke(false, _gameRoundData.Score);
+                        isReload = true;
+                    }
+                    else
+                    {
+                        _gameRoundData = new()
+                        {
+                            Score = 0
+                        };
+                    }
+                    MasterEventBus.GetMasterEventBus.StartGameWithConfiguration?.Invoke(gameConfiguration, isReload);
                     break;
             }
         }

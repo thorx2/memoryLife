@@ -159,6 +159,10 @@ namespace MemDub
                                             configuration.GameTileColors[item.Color],
                                             configuration.Shapes[item.Type], item.IsConsumed,
                                             item.Type, item.Color);
+                        if (item.IsConsumed)
+                        {
+                            --_currentActiveTiles;
+                        }
                     }
                 }
             }
