@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using Codice.Client.BaseCommands.Differences;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -18,6 +19,7 @@ namespace MemDub
 
         private (int, int) TileIndexPos;
 
+        private bool _animationRunning = false;
         private Button _parentButton;
 
         public (Sprite, Color) GetTileMetadata
@@ -29,6 +31,15 @@ namespace MemDub
         {
             consumed = true;
             containerGroup.alpha = 0f;
+        }
+
+        public void SetTileData(int x, int y, EShapeColor clr, EShapeType type, bool hasBeenConsumed)
+        {
+            SetIndexData(x, y);
+            if (hasBeenConsumed)
+            {
+                TileConsumed();
+            }
         }
 
         public void SetTileData(Sprite visual, Color color)
@@ -62,15 +73,37 @@ namespace MemDub
 
         public void HideTile()
         {
-            displayImage.gameObject.SetActive(false);
+            _animationRunning = true;
+            StartCoroutine(FlipCard(false));
+        }
+
+        private IEnumerator FlipCard(bool isShow)
+        {
+            while (transform.localScale.x > 0f)
+            {
+                yield return new WaitForEndOfFrame();
+                transform.localScale = new(transform.localScale.x - 0.1f, transform.localScale.y, transform.localScale.z);
+            }
+            displayImage.gameObject.SetActive(isShow);
+            if (isShow)
+            {
+                MasterEventBus.GetMasterEventBus.OnTileSelected(this);
+            }
+            while (transform.localScale.x < 1f)
+            {
+                yield return new WaitForEndOfFrame();
+                transform.localScale = new(transform.localScale.x + 0.1f, transform.localScale.y, transform.localScale.z);
+            }
+            transform.localScale = Vector3.one;
+            _animationRunning = false;
         }
 
         public void ShowTile()
         {
-            if (!consumed)
+            if (!consumed && !_animationRunning)
             {
-                displayImage.gameObject.SetActive(true);
-                MasterEventBus.GetMasterEventBus.OnTileSelected(this);
+                _animationRunning = true;
+                StartCoroutine(FlipCard(true));
             }
         }
 

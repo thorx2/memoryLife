@@ -590,6 +590,7 @@ MonoBehaviour:
   gridBoard: {fileID: 974616611}
   gridPrefab: {fileID: 7531603858582993695, guid: 332941933f0547749a48b9f434c81fa9, type: 3}
   horizontalContainer: {fileID: 2616223439041860708, guid: e4ae1450e267eec4ca76525f636bb9dd, type: 3}
+  gameManager: {fileID: 1358056847}
 --- !u!114 &974616617
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1194,6 +1195,10 @@ PrefabInstance:
     - target: {fileID: 2153569782949845670, guid: 82328e18489035245931b01d869f0bcd, type: 3}
       propertyPath: m_Name
       value: Menu
+      objectReference: {fileID: 0}
+    - target: {fileID: 2153569782949845670, guid: 82328e18489035245931b01d869f0bcd, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6738363178941375092, guid: 82328e18489035245931b01d869f0bcd, type: 3}
       propertyPath: m_Pivot.x

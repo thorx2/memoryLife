@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 namespace MemDub
@@ -15,6 +16,10 @@ namespace MemDub
 
         [SerializeField]
         private Transform horizontalContainer;
+
+        //Yet another evil reference
+        [SerializeField]
+        private GameManager gameManager;
 
 
         private List<GridTile> spawnedTiles;
@@ -36,21 +41,36 @@ namespace MemDub
         {
             if (isSuccess)
             {
+                //Susceptible to bugs and count issues.
+                //TODO need to change to something more solid.
                 currentActiveTiles -= 2;
                 if (currentActiveTiles <= 0)
                 {
+                    SaveManager.GetInstance.UpdateInGameState(false);
                     MasterEventBus.GetMasterEventBus.OnGameStateChanged?.Invoke(EGameState.EGameOver);
                 }
+                //Save board state again here
+                var x = gameManager.GetGameRoundData;
             }
         }
 
-        public void RecreateBoardData(string dataJson)
+        private void StartGameWithConfiguration(GameConfiguration configuration, bool isReplay)
         {
+            List<TileData> data = null;
+            if (isReplay)
+            {
+                if (SaveManager.GetInstance.GetBoardState().Length > 0)
+                {
+                    var d = JsonUtility.FromJson<GameRoundData>(SaveManager.GetInstance.GetBoardState());
+                    configuration.RowCount = d.BoardSizeX;
+                    configuration.ColCount = d.BoardSizeY;
+                    data = d.TileInformation;
+                }
+                else
+                {
 
-        }
-
-        private void StartGameWithConfiguration(GameConfiguration configuration, int selectedDifficulty)
-        {
+                }
+            }
             for (int i = gridBoard.transform.childCount - 1; i >= 0; i--)
             {
                 Destroy(gridBoard.transform.GetChild(i).gameObject);
@@ -98,19 +118,31 @@ namespace MemDub
                 spawnedTiles.Add(rndTile);
             }
             tempHolder.AddRange(spawnedTiles);
+            List<Transform> rowContainer = new();
             for (int i = 0; i < configuration.RowCount; i++)
             {
-                var tempHor = Instantiate(horizontalContainer, gridBoard);
+                rowContainer.Add(Instantiate(horizontalContainer, gridBoard));
                 for (int j = 0; j < configuration.ColCount; j++)
                 {
                     var x = tempHolder[listRnd.Next(tempHolder.Count)];
-                    x.transform.SetParent(tempHor.transform);
-                    x.SetIndexData(i,j);
+                    x.transform.SetParent(rowContainer.Last().transform);
+                    x.SetIndexData(i, j);
                     tempHolder.Remove(x);
                 }
             }
 
+            if (data != null)
+            {
+                foreach (var item in data)
+                {
+                    if (rowContainer[item.X].GetChild(item.Y).TryGetComponent<GridTile>(out var tile))
+                    {
+                        tile.SetTileData(item.X, item.Y, item.Color, item.Type, item.IsConsumed);
+                    }
+                }
+            }
             StartCoroutine(HideTilesPostShowForGame());
+            SaveManager.GetInstance.UpdateInGameState(true);
         }
         #endregion
 
@@ -145,11 +177,7 @@ namespace MemDub
         #endregion
 
         #region Testing
-        [ContextMenu("Generate test grid")]
-        public void TestGridGeneration()
-        {
 
-        }
         #endregion
     }
 }

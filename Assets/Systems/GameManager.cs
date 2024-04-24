@@ -12,15 +12,17 @@ namespace MemDub
 
         private GridTile lastSelectedTile;
 
-        private int _currentScore;
+        private GameRoundData _gameRoundData;
 
-        private int _difficultyValue = 0;
+        public GameRoundData GetGameRoundData
+        {
+            get => _gameRoundData;
+        }
 
         protected void Awake()
         {
             MasterEventBus.GetMasterEventBus.OnGameStateChanged += OnGameStateChanged;
             MasterEventBus.GetMasterEventBus.OnTileSelected += OnTileSelected;
-            _currentScore = 0;
         }
 
         private void OnGameStateChanged(EGameState state)
@@ -28,8 +30,9 @@ namespace MemDub
             switch (state)
             {
                 case EGameState.EInGame:
-                    //TODO Difficulty menu?
-                    MasterEventBus.GetMasterEventBus.StartGameWithConfiguration?.Invoke(gameConfiguration, _difficultyValue);
+                    _gameRoundData = new();
+                    _gameRoundData.Score = 0;
+                    MasterEventBus.GetMasterEventBus.StartGameWithConfiguration?.Invoke(gameConfiguration, SaveManager.GetInstance.GetInGameState());
                     break;
             }
         }
@@ -39,10 +42,10 @@ namespace MemDub
             if (lastSelectedTile != null)
             {
                 var isSuccess = lastSelectedTile.TileMatches(selectedTile);
-                
+
                 if (isSuccess)
                 {
-                    _currentScore += gameConfiguration.ScorePerMatch;
+                    _gameRoundData.Score += gameConfiguration.ScorePerMatch;
                 }
                 StartCoroutine(DelayedTileHide(selectedTile, isSuccess));
             }
@@ -57,7 +60,7 @@ namespace MemDub
             yield return new WaitForSeconds(0.75f);
             if (isConsume)
             {
-                MasterEventBus.GetMasterEventBus.OnPlayerActionDone?.Invoke(true, _currentScore);
+                MasterEventBus.GetMasterEventBus.OnPlayerActionDone?.Invoke(true, _gameRoundData.Score);
                 lastSelectedTile.TileConsumed();
                 brokenPartner.TileConsumed();
             }
@@ -69,9 +72,9 @@ namespace MemDub
             lastSelectedTile = null;
         }
 
-        internal void SetDifficulty(int val)
+        protected void OnDestroy()
         {
-            _difficultyValue = val;
+            SaveManager.GetInstance.SaveBoardState(JsonUtility.ToJson(_gameRoundData));
         }
     }
 }

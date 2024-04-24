@@ -8,7 +8,7 @@ namespace MemDub
         public Action<EGameState> OnGameStateChanged;
         public Action<GridTile> OnTileSelected;
         public Action<bool, int> OnPlayerActionDone;
-        public Action<GameConfiguration, int> StartGameWithConfiguration;
+        public Action<GameConfiguration, bool> StartGameWithConfiguration;
         #endregion
 
         #region Singleton

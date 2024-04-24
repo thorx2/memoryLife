@@ -10,6 +10,9 @@ namespace MemDub
         [SerializeField]
         private GameManager gameManager;
 
+        [SerializeField]
+        private Button continueButton;
+
         protected void Awake()
         {
             MasterEventBus.GetMasterEventBus.OnGameStateChanged += OnGameStateChanged;
@@ -18,6 +21,8 @@ namespace MemDub
         protected void Start()
         {
             MasterEventBus.GetMasterEventBus.OnGameStateChanged?.Invoke(EGameState.EInMenu);
+
+            continueButton.interactable = SaveManager.GetInstance.GetInGameState();
         }
 
         private void OnGameStateChanged(EGameState state)
@@ -35,12 +40,13 @@ namespace MemDub
 
         public void StartGame()
         {
+            SaveManager.GetInstance.UpdateInGameState(false);
             MasterEventBus.GetMasterEventBus.OnGameStateChanged?.Invoke(EGameState.EInGame);
         }
 
-        public void OnDifficultyChange(int val)
+        public void ContinueGame()
         {
-            gameManager.SetDifficulty(val);
+            MasterEventBus.GetMasterEventBus.OnGameStateChanged?.Invoke(EGameState.EInGame);
         }
     }
 }
