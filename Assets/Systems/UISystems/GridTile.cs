@@ -22,6 +22,9 @@ namespace MemDub
         private int _shapeColor;
         private int _shapeType;
 
+        [SerializeField]
+        private AspectRatioFitter aspectRatioFitter;
+
         public (int, int) GetTileIndexPos
         {
             get => TileIndexPos;
@@ -36,6 +39,11 @@ namespace MemDub
         {
             consumed = true;
             containerGroup.alpha = 0f;
+        }
+
+        public void EnableAspectRatioHelper()
+        {
+            aspectRatioFitter.enabled = true;
         }
 
         public void SetTileData(int x, int y, Color clr, Sprite type, bool hasBeenConsumed, int shapeIndex, int colorIndex)

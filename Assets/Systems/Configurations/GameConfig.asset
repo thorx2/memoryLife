@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c127e3960d02bc042a09f8963f43cc25, type: 3}
   m_Name: GameConfig
   m_EditorClassIdentifier: 
-  RowCount: 3
+  RowCount: 2
   ColCount: 4
   ColorMappingEnum: 000000000100000002000000
   GameTileColors:

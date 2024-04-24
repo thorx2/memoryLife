@@ -21,6 +21,7 @@ namespace MemDub
         private void OnPlayerActionDone(bool _, int score)
         {
             _finalDisplayScore = score;
+            SaveManager.GetInstance.UpdateInGameState(false);
         }
 
         private void OnGameStateChanged(EGameState state)

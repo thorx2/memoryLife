@@ -35,7 +35,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: -100, y: -100}
+  m_SizeDelta: {x: -30, y: -30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &999633975514220220
 CanvasRenderer:
@@ -225,6 +225,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   displayImage: {fileID: 4227382631955341611}
   containerGroup: {fileID: 2537168267911463330}
+  aspectRatioFitter: {fileID: -6208324632556945444}
 --- !u!225 &2537168267911463330
 CanvasGroup:
   m_ObjectHideFlags: 0

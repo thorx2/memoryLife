@@ -591,6 +591,7 @@ MonoBehaviour:
   gridPrefab: {fileID: 7531603858582993695, guid: 332941933f0547749a48b9f434c81fa9, type: 3}
   horizontalContainer: {fileID: 2616223439041860708, guid: e4ae1450e267eec4ca76525f636bb9dd, type: 3}
   gameManager: {fileID: 1358056847}
+  verticalLayoutGroup: {fileID: 974616617}
 --- !u!114 &974616617
 MonoBehaviour:
   m_ObjectHideFlags: 0

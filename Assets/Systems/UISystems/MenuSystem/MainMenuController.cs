@@ -1,4 +1,5 @@
 using System;
+using log4net.Util;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -21,7 +22,10 @@ namespace MemDub
         protected void Start()
         {
             MasterEventBus.GetMasterEventBus.OnGameStateChanged?.Invoke(EGameState.EInMenu);
+        }
 
+        protected void OnEnable()
+        {
             continueButton.interactable = SaveManager.GetInstance.GetInGameState();
         }
 

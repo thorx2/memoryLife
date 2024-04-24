@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace MemDub
 {
@@ -21,7 +22,8 @@ namespace MemDub
         [SerializeField]
         private GameManager gameManager;
 
-
+        [SerializeField]
+        private VerticalLayoutGroup verticalLayoutGroup;
         private List<GridTile> _spawnedTiles;
 
         private readonly System.Random _listRnd = new();
@@ -46,7 +48,6 @@ namespace MemDub
                 _currentActiveTiles -= 2;
                 if (_currentActiveTiles <= 0)
                 {
-                    SaveManager.GetInstance.UpdateInGameState(false);
                     MasterEventBus.GetMasterEventBus.OnGameStateChanged?.Invoke(EGameState.EGameOver);
                 }
                 //Save board state again here
@@ -99,6 +100,9 @@ namespace MemDub
             _spawnedTiles.Clear();
 
             _currentActiveTiles = roundRowCount * roundColCount;
+
+            verticalLayoutGroup.childControlHeight = roundRowCount > 2;
+
             if (_currentActiveTiles % 2 != 0)
             {
                 Debug.LogError("Cannot clear board as tiles will not have any pairs!!!");
@@ -178,10 +182,21 @@ namespace MemDub
             rd.TileInformation = td;
             gameManager.GetGameRoundData = rd;
             SaveManager.GetInstance.UpdateInGameState(true);
+            StartCoroutine(TileSizeSet());
         }
         #endregion
 
         #region Functionality
+
+        private IEnumerator TileSizeSet()
+        {
+            yield return new WaitForEndOfFrame();
+            yield return new WaitForEndOfFrame();
+            foreach (var rndTile in _spawnedTiles)
+            {
+                rndTile.EnableAspectRatioHelper();
+            }
+        }
 
         private IEnumerator HideTilesPostShowForGame()
         {
