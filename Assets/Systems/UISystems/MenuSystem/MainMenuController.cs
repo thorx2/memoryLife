@@ -44,7 +44,6 @@ namespace MemDub
 
         public void StartGame()
         {
-            SaveManager.GetInstance.UpdateInGameState(false);
             MasterEventBus.GetMasterEventBus.OnGameStateChanged?.Invoke(EGameState.EInGame);
         }
 

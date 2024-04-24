@@ -21,7 +21,6 @@ namespace MemDub
         private void OnPlayerActionDone(bool _, int score)
         {
             _finalDisplayScore = score;
-            SaveManager.GetInstance.UpdateInGameState(false);
         }
 
         private void OnGameStateChanged(EGameState state)
@@ -36,6 +35,7 @@ namespace MemDub
         public void OnContinueButtonHit()
         {
             MasterEventBus.GetMasterEventBus.OnGameStateChanged?.Invoke(EGameState.EInMenu);
+            SaveManager.GetInstance.UpdateInGameState(false);
         }
     }
 }
